@@ -2,7 +2,7 @@
 
 SparseMatrix::SparseMatrix(int _rownum, int _colnum, int _nz) : rownum(_rownum), colnum(_colnum) {
 	nz = _nz;
-	vals = new int[nz];
+	vals = new double[nz];
 	rows = new int[nz];
 	cols = new int[nz];
 }
@@ -13,9 +13,9 @@ SparseMatrix::~SparseMatrix() {
 	delete[] cols;
 }
 
-void SparseMatrix::Generate() {
+void SparseMatrix::Generate(double value_lb, double value_hb) {
 	for (int i = 0; i < nz; ++i) {
-		vals[i] = rand() % 9 + 1;
+		vals[i] = (double)rand() / RAND_MAX * (value_hb - value_lb) + value_lb;
 		rows[i] = rand() % rownum;
 	}
 	my_qsort(rows, 0, nz-1);
@@ -67,7 +67,7 @@ void SparseMatrix::SortRow(int row_start, int row_end) {
 void SparseMatrix::ReallocateMemory(int actNZ) {
 	int* _rows = new int[actNZ];
 	int* _cols = new int[actNZ];
-	int* _vals = new int[actNZ];
+	double* _vals = new double[actNZ];
 	for (int i = 0; i < (nz < actNZ ? nz : actNZ); ++i) {
 		_rows[i] = rows[i];
 		_cols[i] = cols[i];
@@ -147,7 +147,7 @@ SparseMatrix& SparseMatrix::Scatter() {
 	SparseMatrix& part = *(new SparseMatrix(rownum, colnum, sendcounts[ProcID]));
 	MPI_Scatterv(rows, sendcounts, displacements, MPI_INT, part.rows, sendcounts[ProcID], MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Scatterv(cols, sendcounts, displacements, MPI_INT, part.cols, sendcounts[ProcID], MPI_INT, 0, MPI_COMM_WORLD);
-	MPI_Scatterv(vals, sendcounts, displacements, MPI_INT, part.vals, sendcounts[ProcID], MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Scatterv(vals, sendcounts, displacements, MPI_DOUBLE, part.vals, sendcounts[ProcID], MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	delete[] sendcounts; delete[] displacements;
 	return part;
@@ -160,7 +160,7 @@ void SparseMatrix::Broadcast() {
 
 	MPI_Bcast(rows, nz, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(cols, nz, MPI_INT, 0, MPI_COMM_WORLD);
-	MPI_Bcast(vals, nz, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(vals, nz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
 SparseMatrix& SparseMatrix::Gather() {
@@ -181,15 +181,16 @@ SparseMatrix& SparseMatrix::Gather() {
 			estNZ += recvcounts[k];
 		}
 
-	int *_rows = 0, *_cols = 0, *_vals = 0;
+	int *_rows = 0, *_cols = 0;
+	double *_vals = 0;
 	if (!ProcID) {
 		_rows = new int[estNZ];
 		_cols = new int[estNZ];
-		_vals = new int[estNZ];
+		_vals = new double[estNZ];
 	}
 	MPI_Gatherv(rows, nz, MPI_INT, _rows, recvcounts, displacements, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Gatherv(cols, nz, MPI_INT, _cols, recvcounts, displacements, MPI_INT, 0, MPI_COMM_WORLD);
-	MPI_Gatherv(vals, nz, MPI_INT, _vals, recvcounts, displacements, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Gatherv(vals, nz, MPI_DOUBLE, _vals, recvcounts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	SparseMatrix& S = *(new SparseMatrix(rownum, colnum, estNZ));
 

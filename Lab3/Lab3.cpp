@@ -7,7 +7,11 @@ int main(int argc, char* argv[])
 {
 	const int m = atoi(argv[1]);
 	const int nz = atoi(argv[2]);
-	//bool tiny = (m <= 7 ? true : false);
+	const double lb = atof(argv[3]);
+	const double hb = atof(argv[4]);
+	const int ExpNumber = atoi(argv[5]);
+	bool tiny = (m <= 7 ? true : false);
+
 	double serialStartTime, serialTotalTime, 
 		   parallelStartTime, parallelTotalTime;
 	srand(time(0));
@@ -19,7 +23,7 @@ int main(int argc, char* argv[])
 	}
 	MPI_Comm_rank(MPI_COMM_WORLD, &ProcID);
 
-	for (int i = 0; i<10; ++i) {
+	for (int i = 0; i<ExpNumber; ++i) {
 
 		SparseMatrix A(m, m, nz);
 		SparseMatrix B(m, m, nz);
@@ -27,18 +31,18 @@ int main(int argc, char* argv[])
 		if (!ProcID) {
 			std::cout << "=== Experiment " << i+1 << " ===\n";
 
-			A.Generate();
-			//if (tiny) {
-			//	std::cout << "matrix A:\n";
-			//	A.PrintAsArrays();
-			//	std::cout << "\n";
-			//}
-			B.Generate();
-			//if (tiny) {
-			//	std::cout << "matrix B:\n";
-			//	B.PrintAsArrays();
-			//	std::cout << "\n";
-			//}
+			A.Generate(lb, hb);
+			if (tiny) {
+				std::cout << "matrix A:\n";
+				A.PrintAsArrays();
+				std::cout << "\n";
+			}
+			B.Generate(lb, hb);
+			if (tiny) {
+				std::cout << "matrix B:\n";
+				B.PrintAsArrays();
+				std::cout << "\n";
+			}
 		}
 	
 		parallelStartTime = MPI_Wtime();
@@ -60,19 +64,19 @@ int main(int argc, char* argv[])
 				std::cout << "Results are equal\n";
 			else 
 				std:: cout << "Results are NOT equal!\n";
-			//if (tiny) {
-			//	std::cout << "matrix C:\n";
-			//	SerialRes.PrintAsArrays();
-			//	std::cout << "\n";
-			//}
-			//else 
+			if (tiny) {
+				std::cout << "matrix C:\n";
+				SerialRes.PrintAsArrays();
+				std::cout << "\n";
+			}
+			else 
 				std::cout << "Serial:   " << serialTotalTime << "s\n";
-			//if (tiny) {
-			//	std::cout << "matrix PC:\n";
-			//	ParallelRes.PrintAsArrays();
-			//	std::cout << "\n";
-			//}
-			//else
+			if (tiny) {
+				std::cout << "matrix PC:\n";
+				ParallelRes.PrintAsArrays();
+				std::cout << "\n";
+			}
+			else
 				std::cout << "Parallel: " << parallelTotalTime << "s\n\n";
 		}
 	}

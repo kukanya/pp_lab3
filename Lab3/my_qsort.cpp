@@ -16,8 +16,9 @@ void my_qsort(int* a, int left, int right) {
 	if (l < right) my_qsort(a, l, right);
 }
 
-void my_qsort_bounded(int* a, int* b, int left, int right) {
+void my_qsort_bounded(int* a, double* b, int left, int right) {
 	int l = left, r = right, swp;
+	double dswp;
 	int pivot = a[(l+r)/2];
 
 	while (l <= r) {
@@ -25,7 +26,7 @@ void my_qsort_bounded(int* a, int* b, int left, int right) {
 		while (a[r] > pivot) --r;
 		if (l <= r) {
 			swp = a[l];	a[l] = a[r]; a[r] = swp;
-			swp = b[l]; b[l] = b[r]; b[r] = swp;
+			dswp = b[l]; b[l] = b[r]; b[r] = dswp;
 			++l; --r;
 		}
 	}

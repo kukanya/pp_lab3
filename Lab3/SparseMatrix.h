@@ -4,7 +4,8 @@ class SparseMatrix {
 private:
 	const int rownum, colnum;
 	int nz;
-	int *vals, *rows, *cols;
+	double *vals;
+	int *rows, *cols;
 
 	void SortRow(int row_start, int row_end);
 	void ReallocateMemory(int actNZ);
@@ -12,7 +13,8 @@ private:
 public:
 	SparseMatrix(int _rownum, int _colnum, int _nz);
 	~SparseMatrix();
-	void Generate();
+	void Generate(double value_lb = 1.0, double value_hb = 9.0);
+
 	void PrintAsArrays();
 
 	SparseMatrix& Scatter();

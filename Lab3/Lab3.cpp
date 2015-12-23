@@ -7,9 +7,10 @@ int main(int argc, char* argv[])
 {
 	const int m = atoi(argv[1]);
 	const int nz = atoi(argv[2]);
-	const double lb = atof(argv[3]);
-	const double hb = atof(argv[4]);
-	const int ExpNumber = atoi(argv[5]);
+	const int ExpNumber = (argc > 3) ? atoi(argv[3]) : 1;
+	const double lb = (argc == 6) ? atof(argv[4]) : 1.0;
+	const double hb = (argc == 6) ? atof(argv[5]) : 9.0;
+
 	bool tiny = (m <= 7 ? true : false);
 
 	double serialStartTime, serialTotalTime, 
